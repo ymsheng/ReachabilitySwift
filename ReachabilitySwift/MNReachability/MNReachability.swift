@@ -33,6 +33,10 @@ public class MNReachability {
     
     
     public func startNotifier() {
+        if self.isNotifying {
+            return
+        }
+        self.isNotifying = true
         
     }
     
