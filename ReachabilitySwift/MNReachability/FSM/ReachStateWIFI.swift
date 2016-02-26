@@ -7,3 +7,24 @@
 //
 
 import Foundation
+public class ReachStateWIFI:ReachState {
+    
+    override public func onEventWithError(event: NSDictionary) throws -> RRStateID {
+        var resStateID = RRStateID.RRStateWIFI
+        let eventID = Int(event[kEventKeyID]!.integerValue)
+        
+        switch eventID {
+        case RREventID.RREventUnLoad.rawValue:
+            resStateID = RRStateID.RRStateUnloaded
+        case RREventID.RREventPingCallback.rawValue:
+            let eventParam = event[kEventKeyParam]!.boolValue
+            resStateID = FSMStateUtil.RRStateFromPingFlag(eventParam)
+        case RREventID.RREventLocalConnectionCallback.rawValue:
+            resStateID = FSMStateUtil.RRStateFromValue(event[kEventKeyParam]!.string)
+        default:
+            throw NSError(domain: "FSM", code: kFSMErrorNotAccept, userInfo: nil)
+        }
+        
+        return resStateID;
+    }
+}

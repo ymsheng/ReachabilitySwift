@@ -7,3 +7,9 @@
 //
 
 import Foundation
+
+public class ReachState {
+    public func onEventWithError(event:NSDictionary) throws -> RRStateID {
+        return RRStateID.RRStateInvalid
+    }
+}

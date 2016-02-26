@@ -7,3 +7,25 @@
 //
 
 import Foundation
+
+public class ReachStateWWAN:ReachState {
+    
+    override public func onEventWithError(event: NSDictionary) throws -> RRStateID {
+        var resStateID = RRStateID.RRStateWWAN
+        let eventID = Int(event[kEventKeyID]!.integerValue)
+        
+        switch eventID {
+        case RREventID.RREventUnLoad.rawValue:
+            resStateID = RRStateID.RRStateUnloaded
+        case RREventID.RREventPingCallback.rawValue:
+            let eventParam = event[kEventKeyParam]!.boolValue
+            resStateID = FSMStateUtil.RRStateFromPingFlag(eventParam)
+        case RREventID.RREventLocalConnectionCallback.rawValue:
+            resStateID = FSMStateUtil.RRStateFromValue(event[kEventKeyParam]!.string)
+        default:
+            throw NSError(domain: "FSM", code: kFSMErrorNotAccept, userInfo: nil)
+        }
+        
+        return resStateID;
+    }
+}

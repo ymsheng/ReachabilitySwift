@@ -7,3 +7,19 @@
 //
 
 import Foundation
+
+public class ReachStateUnloaded:ReachState {
+    override public func onEventWithError(event: NSDictionary) throws -> RRStateID {
+        var resStateID:RRStateID = RRStateID.RRStateUnloaded
+        let eventID = Int(event[kEventKeyID]!.integerValue)
+        
+        switch eventID {
+        case RREventID.RREventLoad.rawValue:
+            resStateID = RRStateID.RRStateLoading
+        default:
+            throw NSError(domain: "FSM", code: kFSMErrorNotAccept, userInfo: nil)
+        }
+        
+        return resStateID;
+    }
+}
