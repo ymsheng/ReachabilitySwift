@@ -35,7 +35,7 @@ public enum RREventID:Int {
 
 public class FSMEngine {
     var currentStateID:RRStateID = .RRStateInvalid
-    var allStatus:NSArray = []
+    var allStatus:NSArray = [ReachStateUnloaded(),ReachStateUnReachable(),ReachStateLoading(),ReachStateWIFI(),ReachStateWWAN()]
     
     init() {
         
@@ -48,7 +48,7 @@ public class FSMEngine {
     public func reciveInput(dic:NSDictionary) -> Int {
 
         let currentState:ReachState = self.allStatus[self.currentStateID.rawValue] as! ReachState
-        var previousStateID:RRStateID =  RRStateID.RRStateUnloaded
+        var previousStateID:RRStateID =  self.currentStateID
         
         do {
             let newStateID:RRStateID = try currentState.onEventWithError(dic)
@@ -67,7 +67,7 @@ public class FSMEngine {
     }
     
     public func isCurrentStateAvailable() -> Bool {
-        if self.currentStateID.rawValue == RRStateID.RRStateUnloaded.rawValue ||
+        if self.currentStateID.rawValue == RRStateID.RRStateUnReachable.rawValue ||
         self.currentStateID.rawValue == RRStateID.RRStateWWAN.rawValue ||
         self.currentStateID.rawValue == RRStateID.RRStateWIFI.rawValue {
             return true

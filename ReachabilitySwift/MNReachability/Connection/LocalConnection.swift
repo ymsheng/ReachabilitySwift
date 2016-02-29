@@ -37,12 +37,12 @@ public func connectionFlags(flags:SCNetworkReachabilityFlags) -> String {
         ((flags.rawValue & SCNetworkReachabilityFlags.IsDirect.rawValue != 0) ? "d" : "-"))
 }
 
-public class LocalConnection {
+public class LocalConnection : NSObject {
     static let shareInstance = LocalConnection()
     var reachabilityRef:SCNetworkReachabilityRef
     var reachabilitySerialQueue:dispatch_queue_t
     
-    init(){
+    override init(){
         var zeroAddr = sockaddr(sa_len: 0, sa_family: 0, sa_data: (0,0,0,0,0,0,0,0,0,0,0,0,0,0))
         zeroAddr.sa_len = UInt8(sizeofValue(zeroAddr))
         zeroAddr.sa_family = sa_family_t(AF_INET)
@@ -52,31 +52,22 @@ public class LocalConnection {
     }
     
     public func startNotifier() {
-        //        let block: @convention(block) (SCNetworkReachabilityRef, SCNetworkReachabilityFlags, UnsafePointer<Void>) -> Void = {
-        ////            let connection = info as! LocalConnection
-        ////            autoreleasepool { () -> () in
-        ////                connection.localConnectionChanged()
-        ////            }
-        //        }
-        //
-        //
-        //        let blockObject = imp_implementationWithBlock(unsafeBitCast(block, AnyObject.self))
-        //        let fp = unsafeBitCast(blockObject, SCNetworkReachabilityCallBack.self)
-        
+      
+        var context = SCNetworkReachabilityContext(version: 0, info: unsafeBitCast(self, UnsafeMutablePointer<Int>.self), retain: nil, release: nil, copyDescription: nil)
         
         if SCNetworkReachabilitySetCallback(self.reachabilityRef, {(_,_,info) in
             let connection = unsafeBitCast(info, LocalConnection.self)
             autoreleasepool { () -> () in
                 connection.localConnectionChanged()
             }
-            } , nil) != false{//&context
+            } , &context) != false{//&context
                 
                 print("设置回调成功");
                 
-                if !SCNetworkReachabilitySetDispatchQueue(self.reachabilityRef, self.reachabilitySerialQueue)
+                if SCNetworkReachabilitySetDispatchQueue(self.reachabilityRef, self.reachabilitySerialQueue) == false
                 {
                     SCNetworkReachabilitySetCallback(self.reachabilityRef, nil, nil)
-                    print("设置runloop成功")
+                    print("设置runloop fail")
                 }
         }
         else {
@@ -93,10 +84,6 @@ public class LocalConnection {
     }
     
     public func currentLocalConnectionStatus() -> LocalConnectionStatus {
-        return .LC_UnReachable
-    }
-    
-    public func localConnectionChanged() -> LocalConnectionStatus {
         if self.isReachable() {
             if self.isReachableViaWifi() {
                 return .LC_WiFi
@@ -110,9 +97,15 @@ public class LocalConnection {
         }
     }
     
+    public func localConnectionChanged() {
+        dispatch_async(dispatch_get_main_queue(), { () -> Void in
+            NSNotificationCenter.defaultCenter().postNotificationName(kLocalConnectionChangedNotification, object: self)
+        })
+    }
+    
     func isReachable() -> Bool {
         var flags:SCNetworkReachabilityFlags = SCNetworkReachabilityFlags.IsDirect
-        if SCNetworkReachabilityGetFlags(self.reachabilityRef, &flags) {
+        if SCNetworkReachabilityGetFlags(self.reachabilityRef, &flags) == false {
             return false
         }
         else {
@@ -139,8 +132,8 @@ public class LocalConnection {
     func isReachableViaWWAN() -> Bool {
         var flags:SCNetworkReachabilityFlags = SCNetworkReachabilityFlags.TransientConnection
         if SCNetworkReachabilityGetFlags(self.reachabilityRef, &flags) {
-            if (flags.rawValue & SCNetworkReachabilityFlags.Reachable.rawValue) == 1 {
-                if (flags.rawValue & SCNetworkReachabilityFlags.IsWWAN.rawValue) == 1 {
+            if (flags.rawValue & SCNetworkReachabilityFlags.Reachable.rawValue) != 0 {
+                if (flags.rawValue & SCNetworkReachabilityFlags.IsWWAN.rawValue)  != 0 {
                     return true
                 }
             }
@@ -151,8 +144,8 @@ public class LocalConnection {
     func isReachableViaWifi() -> Bool {
         var flags:SCNetworkReachabilityFlags = SCNetworkReachabilityFlags.TransientConnection
         if SCNetworkReachabilityGetFlags(self.reachabilityRef, &flags) {
-            if (flags.rawValue & SCNetworkReachabilityFlags.Reachable.rawValue) == 1 {
-                if (flags.rawValue & SCNetworkReachabilityFlags.IsWWAN.rawValue) == 1 {
+            if (flags.rawValue & SCNetworkReachabilityFlags.Reachable.rawValue)  != 0 {
+                if (flags.rawValue & SCNetworkReachabilityFlags.IsWWAN.rawValue)  != 0 {
                     return false
                 }
                 return true

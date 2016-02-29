@@ -13,6 +13,7 @@
 		037463071C7E190F00B619F3 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 037463061C7E190F00B619F3 /* Assets.xcassets */; };
 		0374630A1C7E190F00B619F3 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 037463081C7E190F00B619F3 /* LaunchScreen.storyboard */; };
 		037463131C7E1A6800B619F3 /* MNReachability.swift in Sources */ = {isa = PBXBuildFile; fileRef = 037463121C7E1A6800B619F3 /* MNReachability.swift */; };
+		03CBDDA21C81A17F00A8B6D0 /* CFNetwork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 03CBDDA11C81A17F00A8B6D0 /* CFNetwork.framework */; };
 		03F1FFA51C7EA85E00ACC58E /* LocalConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03F1FFA41C7EA85E00ACC58E /* LocalConnection.swift */; };
 		03F1FFA71C7EA88E00ACC58E /* PingFoundation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03F1FFA61C7EA88E00ACC58E /* PingFoundation.swift */; };
 		03F1FFA91C7EA89D00ACC58E /* PingHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03F1FFA81C7EA89D00ACC58E /* PingHelper.swift */; };
@@ -35,6 +36,7 @@
 		037463091C7E190F00B619F3 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		0374630B1C7E190F00B619F3 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		037463121C7E1A6800B619F3 /* MNReachability.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MNReachability.swift; sourceTree = "<group>"; };
+		03CBDDA11C81A17F00A8B6D0 /* CFNetwork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CFNetwork.framework; path = System/Library/Frameworks/CFNetwork.framework; sourceTree = SDKROOT; };
 		03F1FFA41C7EA85E00ACC58E /* LocalConnection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LocalConnection.swift; sourceTree = "<group>"; };
 		03F1FFA61C7EA88E00ACC58E /* PingFoundation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PingFoundation.swift; sourceTree = "<group>"; };
 		03F1FFA81C7EA89D00ACC58E /* PingHelper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PingHelper.swift; sourceTree = "<group>"; };
@@ -53,6 +55,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				03CBDDA21C81A17F00A8B6D0 /* CFNetwork.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -62,6 +65,7 @@
 		037462F31C7E190F00B619F3 = {
 			isa = PBXGroup;
 			children = (
+				03CBDDA11C81A17F00A8B6D0 /* CFNetwork.framework */,
 				037462FE1C7E190F00B619F3 /* ReachabilitySwift */,
 				037462FD1C7E190F00B619F3 /* Products */,
 			);

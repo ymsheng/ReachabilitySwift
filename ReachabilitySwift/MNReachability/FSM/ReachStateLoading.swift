@@ -21,7 +21,7 @@ public class ReachStateLoading:ReachState {
             let eventParam = event[kEventKeyParam]!.boolValue
             resStateID = FSMStateUtil.RRStateFromPingFlag(eventParam)
         case RREventID.RREventLocalConnectionCallback.rawValue:
-            resStateID = FSMStateUtil.RRStateFromValue(event[kEventKeyParam]!.string)
+            resStateID = FSMStateUtil.RRStateFromValue(event[kEventKeyParam] as! String)
         default:
             throw NSError(domain: "FSM", code: kFSMErrorNotAccept, userInfo: nil)
         }
