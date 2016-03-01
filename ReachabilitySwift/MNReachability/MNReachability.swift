@@ -17,7 +17,7 @@ public enum ReachabilityStatus: Int {
 
 let kRealReachabilityChangedNotification = "kRealReachabilityChangedNotification"
 
-let kDefaultHost = "www.baidu.com"
+let kDefaultHost = "http://www.baidu.com"
 let kDefaultCheckInterval = 1.0
 
 public class MNReachability:NSObject {
@@ -50,6 +50,9 @@ public class MNReachability:NSObject {
         
         NSNotificationCenter.defaultCenter().addObserver(self, selector: "localConnectionChanged:", name: kLocalConnectionChangedNotification, object: nil)
         
+        PingHelper.shareInstance.setHost(self.hostForPing)
+        
+        self.autoCheckReachability()
     }
     
     public func stopNotifier() {
@@ -58,8 +61,31 @@ public class MNReachability:NSObject {
         self.isNotifying = false
     }
     
-    public func reachabilityWithBlock(asyncHandler:((ReachabilityStatus)->Void)) {
-        
+    public func reachabilityWithBlock(asyncHandler:((ReachabilityStatus)->Void)?) {
+        weak var weakSelf = self as MNReachability
+        PingHelper.shareInstance.pingWithBlock({ (isSuccess) -> Void in
+            let rtn = weakSelf?.engine.reciveInput([kEventKeyID:NSNumber(integer: RREventID.RREventPingCallback.rawValue),kEventKeyParam:NSNumber(bool: isSuccess)])
+            if rtn == 0 {
+                if ((weakSelf?.engine.isCurrentStateAvailable()) != nil) {
+                    dispatch_async(dispatch_get_main_queue(), { () -> Void in
+                        NSNotificationCenter.defaultCenter().postNotificationName(kRealReachabilityChangedNotification, object: weakSelf)
+                    })
+                }
+            }
+            if asyncHandler != nil {
+                let currentID:RRStateID = (weakSelf?.engine.currentStateID)!
+                switch currentID {
+                case RRStateID.RRStateUnReachable:
+                    asyncHandler!(ReachabilityStatus.ReachStatusNotReachable)
+                case RRStateID.RRStateWIFI:
+                    asyncHandler!(ReachabilityStatus.ReachStatusViaWiFi)
+                case RRStateID.RRStateWWAN:
+                    asyncHandler!(ReachabilityStatus.ReachStatusViaWWAN)
+                default:
+                    asyncHandler!(ReachabilityStatus.ReachStatusNotReachable)
+                }
+            }
+        })
         
     }
     
@@ -93,9 +119,7 @@ public class MNReachability:NSObject {
     
     func appBecomeActive() {
         if self.isNotifying {
-            self.reachabilityWithBlock({
-                Void -> Void in
-            })
+            self.reachabilityWithBlock(nil)
         }
     }
     
@@ -106,9 +130,23 @@ public class MNReachability:NSObject {
         if rtn == 0 {
             if self.engine.isCurrentStateAvailable() {
                 NSNotificationCenter.defaultCenter().postNotificationName(kRealReachabilityChangedNotification, object: self)
-                //                self.reachabilityWithBlock(asyncHandler:nil)
+                reachabilityWithBlock(nil);
             }
         }
+    }
+    
+    func autoCheckReachability() {
+        if self.isNotifying == false {
+            return
+        }
+        
+        weak var weakSelf = self as MNReachability
+        let popTime = dispatch_time(DISPATCH_TIME_NOW,
+            Int64(60 * self.autoCheckInterval * Double(NSEC_PER_SEC))) // 1
+        dispatch_after(popTime, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), { () -> Void in
+            weakSelf?.reachabilityWithBlock(nil);
+            weakSelf?.autoCheckReachability()
+        })
     }
     
     deinit {

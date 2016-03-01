@@ -15,22 +15,24 @@ public typealias comBlock = (Bool) -> Void
 public class PingHelper : PingFoundationDelegate {
     static let shareInstance = PingHelper()
     
-    var completionBlocks:NSMutableArray = NSMutableArray()
+    var completionBlock:comBlock?
     var pingFoundation:PingFoundation?
     var isPinging:Bool = false
-
+    
     
     public func pingWithBlock(completion:comBlock) {
-        self.completionBlocks.addObject(completion as! AnyObject)
         
         if self.isPinging == false {
+            self.completionBlock = completion
             self.pingFoundation!.stop()
             weak var weakSelf = self as PingHelper
-            dispatch_sync(dispatch_get_main_queue(), { () -> Void in
+            dispatch_async(dispatch_get_main_queue(), { () -> Void in
                 weakSelf?.isPinging = true
                 weakSelf?.pingFoundation!.start()
                 
-                dispatch_after(2, dispatch_get_main_queue(), { () -> Void in
+                let popTime = dispatch_time(DISPATCH_TIME_NOW,
+                    Int64(2 * Double(NSEC_PER_SEC))) 
+                dispatch_after(popTime, dispatch_get_main_queue(), { () -> Void in
                     weakSelf?.endWithFlag(false)
                 })
             })
@@ -52,12 +54,16 @@ public class PingHelper : PingFoundationDelegate {
         self.pingFoundation?.stop()
         
         
-        for(var i=0;i<self.completionBlocks.count;i++) {
-            let block:comBlock = self.completionBlocks.objectAtIndex(i) as! comBlock
-            block(isSuccess)
+        //        for(var i=0;i<self.completionBlocks.count;i++) {
+        //            let block:comBlock = self.completionBlocks.objectAtIndex(i) as! comBlock
+        //            block(isSuccess)
+        //        }
+        
+        if self.completionBlock != nil {
+            self.completionBlock!(isSuccess)
         }
         
-        self.completionBlocks.removeAllObjects()
+        self.completionBlock = nil
         
         dispatch_async(dispatch_get_main_queue()) { () -> Void in
             NSNotificationCenter.defaultCenter().postNotificationName(kPingResultNotification, object: NSNumber(bool: isSuccess))
@@ -66,7 +72,7 @@ public class PingHelper : PingFoundationDelegate {
     
     //MARK: - pingfoundation delegate
     @objc public func pingFoundationDidStartWithAddress(pinger:PingFoundation, address:NSData) {
-
+        
     }
     @objc public func pingFoundationDidFailWithError(pinger:PingFoundation, error:NSError) {
         self.endWithFlag(false)
@@ -75,16 +81,16 @@ public class PingHelper : PingFoundationDelegate {
         
     }
     @objc public func pingFoundationDidFailToSendPacketWithError(pinger:PingFoundation, packet:NSData, error:NSError) {
-         self.endWithFlag(false)
+        self.endWithFlag(false)
     }
     @objc public func pingFoundationDidReceivePingResponsePacket(pinger:PingFoundation, packet:NSData) {
-         self.endWithFlag(false)
+        self.endWithFlag(true)
     }
     @objc public func pingFoundationDidReceiveUnexpectedPacket(ping:PingFoundation, packet:NSData) {
         
     }
     
     deinit {
-        self.completionBlocks.removeAllObjects()
+        self.completionBlock = nil
     }
 }

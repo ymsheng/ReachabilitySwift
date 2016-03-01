@@ -52,7 +52,7 @@ enum kICMPType:Int {
     var hostAddress:NSData?
     var identifier:Int
     var nextSequenceNumber:Int
-    
+    var task:NSURLSessionDataTask?
     
     init(hostName:String?, hostAddress:NSData?) {
         self.hostName = hostName
@@ -62,11 +62,32 @@ enum kICMPType:Int {
     }
     
     public func start() {
+        if self.task != nil {
+            self.task!.cancel()
+        }
         
+        weak var weakSelf = self as PingFoundation
+        
+        self.task = NSURLSession.sharedSession().dataTaskWithRequest(NSURLRequest(URL: NSURL(string: self.hostName!)!), completionHandler: { (data,response,error) -> Void in
+            
+            if error != nil {
+                weakSelf?.delegate?.pingFoundationDidFailWithError!(weakSelf!, error: error!)
+            }
+            else if data?.length > 1 {
+                weakSelf?.delegate?.pingFoundationDidReceivePingResponsePacket!(weakSelf!, packet: data!)
+            }
+            else {
+                weakSelf?.delegate?.pingFoundationDidFailToSendPacketWithError!(weakSelf!, packet: data!, error: error!)
+            }
+        })
+        
+        task?.resume()
     }
     
     public func stop() {
-        
+        if self.task != nil {
+            self.task!.cancel()
+        }
     }
     
     func sendPingWithData(data:NSData) {
@@ -86,6 +107,7 @@ enum kICMPType:Int {
         self.didFailWithError(NSError(domain: (kCFErrorDomainCFNetwork as String), code:2, userInfo: nil))
     }
     
+  
    
     //MARK: - static init
     static public func pingFoundationWithHostName(hostName:String) -> PingFoundation {
