@@ -15,13 +15,13 @@ public enum ReachabilityStatus: Int {
     case ReachStatusViaWiFi = 2
 }
 
-let kRealReachabilityChangedNotification = "kRealReachabilityChangedNotification"
+public let kRealReachabilityChangedNotification = "kRealReachabilityChangedNotification"
 
 let kDefaultHost = "http://www.baidu.com"
 let kDefaultCheckInterval = 1.0
 
 public class MNReachability:NSObject {
-    static let sharedInstance = MNReachability()
+    public static let sharedInstance = MNReachability()
     
     var engine:FSMEngine
     var hostForPing:String = kDefaultHost
