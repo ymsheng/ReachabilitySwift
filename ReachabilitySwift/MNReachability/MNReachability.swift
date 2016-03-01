@@ -34,7 +34,7 @@ public class MNReachability:NSObject {
         
         super.init()
         
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: "appBecomeActive", name:UIApplicationDidBecomeActiveNotification, object: nil)
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: "appBecomeActive", name:UIApplicationWillEnterForegroundNotification, object: nil)
     }
     
     

@@ -46,18 +46,12 @@ public class PingHelper : PingFoundationDelegate {
     
     
     func endWithFlag(isSuccess:Bool) {
-        if self.isPinging == false {
-            return
-        }
+//        if self.isPinging == false {
+//            return
+//        }
         
         self.isPinging = false
         self.pingFoundation?.stop()
-        
-        
-        //        for(var i=0;i<self.completionBlocks.count;i++) {
-        //            let block:comBlock = self.completionBlocks.objectAtIndex(i) as! comBlock
-        //            block(isSuccess)
-        //        }
         
         if self.completionBlock != nil {
             self.completionBlock!(isSuccess)
