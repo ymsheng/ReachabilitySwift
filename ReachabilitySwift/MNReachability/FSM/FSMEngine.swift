@@ -17,35 +17,35 @@ let kParamValueWIFI = "ParamValueWIFI"
 let kFSMErrorNotAccept = 13
 
 public enum RRStateID:Int {
-    case RRStateInvalid = -1
-    case RRStateUnloaded = 0
-    case RRStateLoading = 1
-    case RRStateUnReachable = 2
-    case RRStateWIFI = 3
-    case RRStateWWAN = 4
+    case rrStateInvalid = -1
+    case rrStateUnloaded = 0
+    case rrStateLoading = 1
+    case rrStateUnReachable = 2
+    case rrStateWIFI = 3
+    case rrStateWWAN = 4
 }
 
 public enum RREventID:Int {
-    case RREventLoad = 0
-    case RREventUnLoad = 1
-    case RREventLocalConnectionCallback = 2
-    case RREventPingCallback = 3
+    case rrEventLoad = 0
+    case rrEventUnLoad = 1
+    case rrEventLocalConnectionCallback = 2
+    case rrEventPingCallback = 3
 }
 
 
-public class FSMEngine {
-    var currentStateID:RRStateID = .RRStateInvalid
+open class FSMEngine {
+    var currentStateID:RRStateID = .rrStateInvalid
     var allStatus:NSArray = [ReachStateUnloaded(),ReachStateUnReachable(),ReachStateLoading(),ReachStateWIFI(),ReachStateWWAN()]
     
     init() {
         
     }
     
-    public func start() {
-        self.currentStateID = .RRStateUnloaded
+    open func start() {
+        self.currentStateID = .rrStateUnloaded
     }
     
-    public func reciveInput(dic:NSDictionary) -> Int {
+    open func reciveInput(_ dic:NSDictionary) -> Int {
 
         let currentState:ReachState = self.allStatus[self.currentStateID.rawValue] as! ReachState
         var previousStateID:RRStateID =  self.currentStateID
@@ -66,10 +66,10 @@ public class FSMEngine {
         
     }
     
-    public func isCurrentStateAvailable() -> Bool {
-        if self.currentStateID.rawValue == RRStateID.RRStateUnReachable.rawValue ||
-        self.currentStateID.rawValue == RRStateID.RRStateWWAN.rawValue ||
-        self.currentStateID.rawValue == RRStateID.RRStateWIFI.rawValue {
+    open func isCurrentStateAvailable() -> Bool {
+        if self.currentStateID.rawValue == RRStateID.rrStateUnReachable.rawValue ||
+        self.currentStateID.rawValue == RRStateID.rrStateWWAN.rawValue ||
+        self.currentStateID.rawValue == RRStateID.rrStateWIFI.rawValue {
             return true
         }
         else{

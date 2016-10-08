@@ -10,9 +10,9 @@ import Foundation
 import UIKit
 
 public enum ReachabilityStatus: Int {
-    case ReachStatusNotReachable = 0
-    case ReachStatusViaWWAN = 1
-    case ReachStatusViaWiFi = 2
+    case reachStatusNotReachable = 0
+    case reachStatusViaWWAN = 1
+    case reachStatusViaWiFi = 2
 }
 
 public let kRealReachabilityChangedNotification = "kRealReachabilityChangedNotification"
@@ -20,8 +20,8 @@ public let kRealReachabilityChangedNotification = "kRealReachabilityChangedNotif
 let kDefaultHost = "http://www.baidu.com"
 let kDefaultCheckInterval = 1.0
 
-public class MNReachability:NSObject {
-    public static let sharedInstance = MNReachability()
+open class MNReachability:NSObject {
+    open static let sharedInstance = MNReachability()
     
     var engine:FSMEngine
     var hostForPing:String = kDefaultHost
@@ -34,85 +34,85 @@ public class MNReachability:NSObject {
         
         super.init()
         
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: "appBecomeActive", name:UIApplicationWillEnterForegroundNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(MNReachability.appBecomeActive), name:NSNotification.Name.UIApplicationWillEnterForeground, object: nil)
     }
     
     
-    public func startNotifier() {
+    open func startNotifier() {
         if self.isNotifying {
             return
         }
         self.isNotifying = true
         
-        self.engine.reciveInput([kEventKeyID:NSNumber(integer:RREventID.RREventLoad.rawValue)])
+        self.engine.reciveInput([kEventKeyID:NSNumber(value: RREventID.rrEventLoad.rawValue as Int)])
         
         LocalConnection.shareInstance.startNotifier()
         
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: "localConnectionChanged:", name: kLocalConnectionChangedNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(MNReachability.localConnectionChanged(_:)), name: NSNotification.Name(rawValue: kLocalConnectionChangedNotification), object: nil)
         
         PingHelper.shareInstance.setHost(self.hostForPing)
         
         self.autoCheckReachability()
     }
     
-    public func stopNotifier() {
-        self.engine.reciveInput([kEventKeyID:NSNumber(integer: RREventID.RREventUnLoad.rawValue)])
+    open func stopNotifier() {
+        self.engine.reciveInput([kEventKeyID:NSNumber(value: RREventID.rrEventUnLoad.rawValue as Int)])
         LocalConnection.shareInstance.stopNotifier()
         self.isNotifying = false
     }
     
-    public func reachabilityWithBlock(asyncHandler:((ReachabilityStatus)->Void)?) {
+    open func reachabilityWithBlock(_ asyncHandler:((ReachabilityStatus)->Void)?) {
         weak var weakSelf = self as MNReachability
         PingHelper.shareInstance.pingWithBlock({ (isSuccess) -> Void in
-            let rtn = weakSelf?.engine.reciveInput([kEventKeyID:NSNumber(integer: RREventID.RREventPingCallback.rawValue),kEventKeyParam:NSNumber(bool: isSuccess)])
+            let rtn = weakSelf?.engine.reciveInput([kEventKeyID:NSNumber(value: RREventID.rrEventPingCallback.rawValue as Int),kEventKeyParam:NSNumber(value: isSuccess as Bool)])
             if rtn == 0 {
                 if ((weakSelf?.engine.isCurrentStateAvailable()) != nil) {
-                    dispatch_async(dispatch_get_main_queue(), { () -> Void in
-                        NSNotificationCenter.defaultCenter().postNotificationName(kRealReachabilityChangedNotification, object: weakSelf)
+                    DispatchQueue.main.async(execute: { () -> Void in
+                        NotificationCenter.default.post(name: Notification.Name(rawValue: kRealReachabilityChangedNotification), object: weakSelf)
                     })
                 }
             }
             if asyncHandler != nil {
                 let currentID:RRStateID = (weakSelf?.engine.currentStateID)!
                 switch currentID {
-                case RRStateID.RRStateUnReachable:
-                    asyncHandler!(ReachabilityStatus.ReachStatusNotReachable)
-                case RRStateID.RRStateWIFI:
-                    asyncHandler!(ReachabilityStatus.ReachStatusViaWiFi)
-                case RRStateID.RRStateWWAN:
-                    asyncHandler!(ReachabilityStatus.ReachStatusViaWWAN)
+                case RRStateID.rrStateUnReachable:
+                    asyncHandler!(ReachabilityStatus.reachStatusNotReachable)
+                case RRStateID.rrStateWIFI:
+                    asyncHandler!(ReachabilityStatus.reachStatusViaWiFi)
+                case RRStateID.rrStateWWAN:
+                    asyncHandler!(ReachabilityStatus.reachStatusViaWWAN)
                 default:
-                    asyncHandler!(ReachabilityStatus.ReachStatusNotReachable)
+                    asyncHandler!(ReachabilityStatus.reachStatusNotReachable)
                 }
             }
         })
         
     }
     
-    public func currentReachabilityStatus() -> ReachabilityStatus {
+    open func currentReachabilityStatus() -> ReachabilityStatus {
         let currentID:RRStateID = self.engine.currentStateID
         switch currentID {
-        case RRStateID.RRStateUnReachable:
-            return .ReachStatusNotReachable
-        case RRStateID.RRStateWIFI:
-            return .ReachStatusViaWiFi
-        case RRStateID.RRStateWWAN:
-            return .ReachStatusViaWWAN
-        case RRStateID.RRStateLoading:
+        case RRStateID.rrStateUnReachable:
+            return .reachStatusNotReachable
+        case RRStateID.rrStateWIFI:
+            return .reachStatusViaWiFi
+        case RRStateID.rrStateWWAN:
+            return .reachStatusViaWWAN
+        case RRStateID.rrStateLoading:
             return ReachabilityStatus(rawValue:LocalConnection.shareInstance.currentLocalConnectionStatus().rawValue)!
         default:
-            return .ReachStatusNotReachable
+            return .reachStatusNotReachable
         }
         
     }
     
-    public func paramValueFromStatus(status:LocalConnectionStatus) -> String {
+    open func paramValueFromStatus(_ status:LocalConnectionStatus) -> String {
         switch status {
-        case .LC_UnReachable:
+        case .lc_UnReachable:
             return kParamValueUnReachable
-        case .LC_WiFi:
+        case .lc_WiFi:
             return kParamValueWIFI
-        case .LC_WWAN:
+        case .lc_WWAN:
             return kParamValueWWAN
         }
     }
@@ -123,13 +123,13 @@ public class MNReachability:NSObject {
         }
     }
     
-    func localConnectionChanged(notification:NSNotification) {
+    func localConnectionChanged(_ notification:Notification) {
         let lc:LocalConnection = notification.object as! LocalConnection
         let lcStatus:LocalConnectionStatus = lc.currentLocalConnectionStatus()
-        let rtn = self.engine.reciveInput([kEventKeyID:NSNumber(integer: RREventID.RREventLocalConnectionCallback.rawValue),kEventKeyParam:self.paramValueFromStatus(lcStatus)])
+        let rtn = self.engine.reciveInput([kEventKeyID:NSNumber(value: RREventID.rrEventLocalConnectionCallback.rawValue as Int),kEventKeyParam:self.paramValueFromStatus(lcStatus)])
         if rtn == 0 {
             if self.engine.isCurrentStateAvailable() {
-                NSNotificationCenter.defaultCenter().postNotificationName(kRealReachabilityChangedNotification, object: self)
+                NotificationCenter.default.post(name: Notification.Name(rawValue: kRealReachabilityChangedNotification), object: self)
                 reachabilityWithBlock(nil);
             }
         }
@@ -141,16 +141,15 @@ public class MNReachability:NSObject {
         }
         
         weak var weakSelf = self as MNReachability
-        let popTime = dispatch_time(DISPATCH_TIME_NOW,
-            Int64(60 * self.autoCheckInterval * Double(NSEC_PER_SEC))) // 1
-        dispatch_after(popTime, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), { () -> Void in
+        let popTime = DispatchTime.now() + Double(Int64(60 * self.autoCheckInterval * Double(NSEC_PER_SEC))) / Double(NSEC_PER_SEC) // 1
+        DispatchQueue.global(priority: DispatchQueue.GlobalQueuePriority.default).asyncAfter(deadline: popTime, execute: { () -> Void in
             weakSelf?.reachabilityWithBlock(nil);
             weakSelf?.autoCheckReachability()
         })
     }
     
     deinit {
-        NSNotificationCenter.defaultCenter().removeObserver(self)
+        NotificationCenter.default.removeObserver(self)
         LocalConnection.shareInstance.stopNotifier()
     }
     

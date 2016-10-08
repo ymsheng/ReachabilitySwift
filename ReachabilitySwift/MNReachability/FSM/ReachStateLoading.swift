@@ -8,19 +8,19 @@
 
 import Foundation
 
-public class ReachStateLoading:ReachState {
+open class ReachStateLoading:ReachState {
     
-    override public func onEventWithError(event: NSDictionary) throws -> RRStateID {
-        var resStateID = RRStateID.RRStateLoading
-        let eventID = Int(event[kEventKeyID]!.integerValue)
+    override open func onEventWithError(_ event: NSDictionary) throws -> RRStateID {
+        var resStateID = RRStateID.rrStateLoading
+        let eventID = Int(((event[kEventKeyID]!) as! Int))
 
         switch eventID {
-        case RREventID.RREventUnLoad.rawValue:
-            resStateID = RRStateID.RRStateUnloaded
-        case RREventID.RREventPingCallback.rawValue:
-            let eventParam = event[kEventKeyParam]!.boolValue
-            resStateID = FSMStateUtil.RRStateFromPingFlag(eventParam)
-        case RREventID.RREventLocalConnectionCallback.rawValue:
+        case RREventID.rrEventUnLoad.rawValue:
+            resStateID = RRStateID.rrStateUnloaded
+        case RREventID.rrEventPingCallback.rawValue:
+            let eventParam = (event[kEventKeyParam]! as AnyObject).boolValue
+            resStateID = FSMStateUtil.RRStateFromPingFlag(eventParam!)
+        case RREventID.rrEventLocalConnectionCallback.rawValue:
             resStateID = FSMStateUtil.RRStateFromValue(event[kEventKeyParam] as! String)
         default:
             throw NSError(domain: "FSM", code: kFSMErrorNotAccept, userInfo: nil)
