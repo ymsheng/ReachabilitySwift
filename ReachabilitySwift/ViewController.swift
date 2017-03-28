@@ -18,22 +18,22 @@ class ViewController: UIViewController {
         
         MNReachability.sharedInstance.startNotifier()
         
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: "networkChanged:", name: kRealReachabilityChangedNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(ViewController.networkChanged(_:)), name: NSNotification.Name(rawValue: kRealReachabilityChangedNotification), object: nil)
         
         // Do any additional setup after loading the view, typically from a nib.
     }
     
-    func networkChanged(notification:NSNotification) {
+    func networkChanged(_ notification:Notification) {
         let reachability:MNReachability = notification.object as! MNReachability
         let status:ReachabilityStatus = reachability.currentReachabilityStatus()
         
-        if status == ReachabilityStatus.ReachStatusNotReachable {
+        if status == ReachabilityStatus.reachStatusNotReachable {
             self.lbMessage?.text = "network unreachable"
         }
-        else if status == ReachabilityStatus.ReachStatusViaWiFi {
+        else if status == ReachabilityStatus.reachStatusViaWiFi {
             self.lbMessage?.text =  "network wifi! Free"
         }
-        else if status == ReachabilityStatus.ReachStatusViaWWAN {
+        else if status == ReachabilityStatus.reachStatusViaWWAN {
             self.lbMessage?.text = "network WWAN! In charge"
         }
     }
@@ -41,11 +41,11 @@ class ViewController: UIViewController {
     @IBAction func clickAction() {
         MNReachability.sharedInstance.reachabilityWithBlock { (status) -> Void in
             switch status {
-            case .ReachStatusNotReachable:
+            case .reachStatusNotReachable:
                 print("Nothing to do! offlineMode")
-            case .ReachStatusViaWiFi:
+            case .reachStatusViaWiFi:
                 print("WIFI you get! free")
-            case .ReachStatusViaWWAN:
+            case .reachStatusViaWWAN:
                 print("take care of your moeny")
             }
         }

@@ -9,36 +9,36 @@
 import Foundation
 
 
-public class FSMStateUtil {
-    static public func RRStateFromValue(LCEventValue:String) -> RRStateID {
+open class FSMStateUtil {
+    static open func RRStateFromValue(_ LCEventValue:String) -> RRStateID {
         if LCEventValue == kParamValueUnReachable {
-            return RRStateID.RRStateUnReachable
+            return RRStateID.rrStateUnReachable
         }
         else if LCEventValue == kParamValueWWAN {
-            return RRStateID.RRStateWWAN
+            return RRStateID.rrStateWWAN
         }
         else if LCEventValue == kParamValueWIFI {
-            return RRStateID.RRStateWIFI
+            return RRStateID.rrStateWIFI
         }
         else {
-            return RRStateID.RRStateInvalid
+            return RRStateID.rrStateInvalid
         }
     }
     
-    static public func RRStateFromPingFlag(isSuccess:Bool) -> RRStateID {
+    static open func RRStateFromPingFlag(_ isSuccess:Bool) -> RRStateID {
         let status:LocalConnectionStatus = LocalConnection.shareInstance.currentLocalConnectionStatus()
         
         if !isSuccess {
-            return RRStateID.RRStateUnReachable
+            return RRStateID.rrStateUnReachable
         }
         else{
             switch status {
-            case .LC_UnReachable:
-                return RRStateID.RRStateUnReachable
-            case .LC_WiFi:
-                return RRStateID.RRStateWIFI
-            case .LC_WWAN:
-                return RRStateID.RRStateWWAN
+            case .lc_UnReachable:
+                return RRStateID.rrStateUnReachable
+            case .lc_WiFi:
+                return RRStateID.rrStateWIFI
+            case .lc_WWAN:
+                return RRStateID.rrStateWWAN
                 
             }
 //            return RRStateID.RRStateWIFI

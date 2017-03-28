@@ -12,7 +12,7 @@ let kPingResultNotification = "kPingResultNotification"
 
 public typealias comBlock = (Bool) -> Void
 
-public class PingHelper : PingFoundationDelegate {
+open class PingHelper : PingFoundationDelegate {
     static let shareInstance = PingHelper()
     
     var completionBlock:comBlock?
@@ -20,32 +20,31 @@ public class PingHelper : PingFoundationDelegate {
     var isPinging:Bool = false
     
     
-    public func pingWithBlock(completion:comBlock) {
+    open func pingWithBlock(_ completion:@escaping comBlock) {
         
         if self.isPinging == false {
             self.completionBlock = completion
             self.pingFoundation!.stop()
             weak var weakSelf = self as PingHelper
-            dispatch_async(dispatch_get_main_queue(), { () -> Void in
+            DispatchQueue.main.async(execute: { () -> Void in
                 weakSelf?.isPinging = true
                 weakSelf?.pingFoundation!.start()
                 
-                let popTime = dispatch_time(DISPATCH_TIME_NOW,
-                    Int64(2 * Double(NSEC_PER_SEC))) 
-                dispatch_after(popTime, dispatch_get_main_queue(), { () -> Void in
+                let popTime = DispatchTime.now() + Double(Int64(2 * Double(NSEC_PER_SEC))) / Double(NSEC_PER_SEC) 
+                DispatchQueue.main.asyncAfter(deadline: popTime, execute: { () -> Void in
                     weakSelf?.endWithFlag(false)
                 })
             })
         }
     }
     
-    func setHost(host:String) {
+    func setHost(_ host:String) {
         self.pingFoundation = PingFoundation.pingFoundationWithHostName(host)
         self.pingFoundation!.delegate = self
     }
     
     
-    func endWithFlag(isSuccess:Bool) {
+    func endWithFlag(_ isSuccess:Bool) {
 //        if self.isPinging == false {
 //            return
 //        }
@@ -59,28 +58,28 @@ public class PingHelper : PingFoundationDelegate {
         
         self.completionBlock = nil
         
-        dispatch_async(dispatch_get_main_queue()) { () -> Void in
-            NSNotificationCenter.defaultCenter().postNotificationName(kPingResultNotification, object: NSNumber(bool: isSuccess))
+        DispatchQueue.main.async { () -> Void in
+            NotificationCenter.default.post(name: Notification.Name(rawValue: kPingResultNotification), object: NSNumber(value: isSuccess as Bool))
         }
     }
     
     //MARK: - pingfoundation delegate
-    @objc public func pingFoundationDidStartWithAddress(pinger:PingFoundation, address:NSData) {
+    @objc open func pingFoundationDidStartWithAddress(_ pinger:PingFoundation, address:Data) {
         
     }
-    @objc public func pingFoundationDidFailWithError(pinger:PingFoundation, error:NSError) {
+    @objc open func pingFoundationDidFailWithError(_ pinger:PingFoundation, error:NSError) {
         self.endWithFlag(false)
     }
-    @objc public func pingFoundationDidSendPacket(pinger:PingFoundation, packet:NSData) {
+    @objc open func pingFoundationDidSendPacket(_ pinger:PingFoundation, packet:Data) {
         
     }
-    @objc public func pingFoundationDidFailToSendPacketWithError(pinger:PingFoundation, packet:NSData, error:NSError) {
+    @objc open func pingFoundationDidFailToSendPacketWithError(_ pinger:PingFoundation, packet:Data, error:NSError) {
         self.endWithFlag(false)
     }
-    @objc public func pingFoundationDidReceivePingResponsePacket(pinger:PingFoundation, packet:NSData) {
+    @objc open func pingFoundationDidReceivePingResponsePacket(_ pinger:PingFoundation, packet:Data) {
         self.endWithFlag(true)
     }
-    @objc public func pingFoundationDidReceiveUnexpectedPacket(ping:PingFoundation, packet:NSData) {
+    @objc open func pingFoundationDidReceiveUnexpectedPacket(_ ping:PingFoundation, packet:Data) {
         
     }
     

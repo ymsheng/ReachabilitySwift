@@ -8,8 +8,8 @@
 
 import Foundation
 
-public class ReachState {
-    public func onEventWithError(event:NSDictionary) throws -> RRStateID {
-        return RRStateID.RRStateInvalid
+open class ReachState {
+    open func onEventWithError(_ event:NSDictionary) throws -> RRStateID {
+        return RRStateID.rrStateInvalid
     }
 }

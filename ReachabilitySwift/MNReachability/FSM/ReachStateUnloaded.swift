@@ -8,14 +8,14 @@
 
 import Foundation
 
-public class ReachStateUnloaded:ReachState {
-    override public func onEventWithError(event: NSDictionary) throws -> RRStateID {
-        var resStateID:RRStateID = RRStateID.RRStateUnloaded
-        let eventID = Int(event[kEventKeyID]!.integerValue)
+open class ReachStateUnloaded:ReachState {
+    override open func onEventWithError(_ event: NSDictionary) throws -> RRStateID {
+        var resStateID:RRStateID = RRStateID.rrStateUnloaded
+        let eventID = Int((event[kEventKeyID] as! Int))
         
         switch eventID {
-        case RREventID.RREventLoad.rawValue:
-            resStateID = RRStateID.RRStateLoading
+        case RREventID.rrEventLoad.rawValue:
+            resStateID = RRStateID.rrStateLoading
         default:
             throw NSError(domain: "FSM", code: kFSMErrorNotAccept, userInfo: nil)
         }
