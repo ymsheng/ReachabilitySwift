@@ -23,7 +23,7 @@ class ViewController: UIViewController {
         // Do any additional setup after loading the view, typically from a nib.
     }
     
-    func networkChanged(_ notification:Notification) {
+    @objc func networkChanged(_ notification:Notification) {
         let reachability:MNReachability = notification.object as! MNReachability
         let status:ReachabilityStatus = reachability.currentReachabilityStatus()
         

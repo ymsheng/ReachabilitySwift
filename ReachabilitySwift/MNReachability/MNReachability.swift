@@ -117,13 +117,13 @@ open class MNReachability:NSObject {
         }
     }
     
-    func appBecomeActive() {
+    @objc func appBecomeActive() {
         if self.isNotifying {
             self.reachabilityWithBlock(nil)
         }
     }
     
-    func localConnectionChanged(_ notification:Notification) {
+    @objc func localConnectionChanged(_ notification:Notification) {
         let lc:LocalConnection = notification.object as! LocalConnection
         let lcStatus:LocalConnectionStatus = lc.currentLocalConnectionStatus()
         let rtn = self.engine.reciveInput([kEventKeyID:NSNumber(value: RREventID.rrEventLocalConnectionCallback.rawValue as Int),kEventKeyParam:self.paramValueFromStatus(lcStatus)])
